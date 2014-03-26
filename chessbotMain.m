@@ -12,10 +12,11 @@ board(3:6,:) = repmat({'empty'},4,8);
 %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
 
 gameOver = false;
+transferFunction = initBoard();
 while (~gameOver)
-    currentBoardImage = saveBoardImage();
+    currentBoardImage = getBoard(transferFunction);
     if (whiteMoved)
-        newBoardImage = saveBoardImage();
+        newBoardImage = getBoard(transferFunction);
         changeList = scanBoardForChanges(currentBoardImage, newBoardImage);
         for i=1:2:size(changeList,1)/2
             oldRow = changeList(i,1);

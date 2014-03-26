@@ -1,4 +1,4 @@
-function [ rgb,dep ] = getFrame( input_args )
+function [ rgb,dep ] = getFrame( )
 %GETFRAME Summary of this function goes here
 %   Detailed explanation goes here
 
