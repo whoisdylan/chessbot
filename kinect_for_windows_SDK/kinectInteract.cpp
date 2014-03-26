@@ -195,7 +195,8 @@ void mexFunction(int nlhs, mxArray *plhs[],int nrhs,const mxArray *prhs[]) {
 	double instr = *mxGetPr(prhs[0]);
 	// 0 - init
 	if(instr == 0) {
-		initKinect();
+		if(!initKinect())
+            mexPrintf("Kinect failed to initialize!");
 	}
 	// 1 - get frame
 	unsigned int ct = 0;
@@ -216,7 +217,7 @@ void mexFunction(int nlhs, mxArray *plhs[],int nrhs,const mxArray *prhs[]) {
 		  }
 		} while((!dep_done | !rgb_done) && ct < IMAGE_TIMEOUT);
 		if(ct == IMAGE_TIMEOUT)
-			mexPrintf("Image timeout - %s %s",dep_done ? "":"Depth", rgb_done ? "":"Color");
+			mexPrintf("Image timeout - %s %s\n",dep_done ? "":"Depth", rgb_done ? "":"Color");
 		if(nlhs > 0) {
 			plhs[0] = color_map;
 			if(nlhs > 1) {
