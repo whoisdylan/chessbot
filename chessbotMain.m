@@ -28,7 +28,7 @@ while (~gameOver)
             board(newRow, newCol) = movedPiece;
             board(oldRow, oldCol) = 'empty';
             %send movement commands to other chessbot
-            if (strcmp(displacedPiece,'empty'))
+            if (~strcmp(displacedPiece,'empty'))
                 removePieceFromBoard(newRow, newCol);
             end
             movePiece(oldRow, oldCol, newRow, newCol);
