@@ -2,8 +2,9 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
     % Requires tqf to be calculated via initBoard (transformation)
 
     [colorImage,depthImage] = getFrame();
-    colorImage = imtransform(colorImage,transferFunction,'XData',[1,481],'YData',[1,481]);
-    depthImage = imtransform(depthImage,transferFunction,'XData',[1,481],'YData',[1,481]);
+    colorImage = imtransform(colorImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
+    depthImage = imtransform(depthImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
+    %depthImage = averageBoard - double(depthImage);
     figure(4)
     imshow(colorImage)
     hold on
@@ -18,14 +19,19 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
     hold off
     
     rgn = round(length(depthImage)/8);
-    pieceThresh = 100;
+    pieceThresh = 30;
+    detectPiece = 100;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
     handPresent = false;
+    
+    gaus = fspecial('gaussian');
     for row=1:8
         for col=1:8
             region = depthImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);
+            zeroCount = conv2(double(region),gaus,'same') == 0;
+            zeroCount = sum(zeroCount(:));
             region(region == 0) = [];
             
             if(min(size(region)) == 0) 
@@ -36,15 +42,17 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
             end
             
             minDepth = min(region(:));
-            maxDepth = max(region(:));
+            maxDepth = double(max(region(:)));
+            bct = double(sum(maxDepth - region(:) > pieceThresh));
             
             %return if hand is on board, player is moving
             if ((maxDepth - boardMin) > handThresh)
                 handPresent = true;
+                disp 'hand found'
                 return;
             end
             
-            boardState(row,col) = maxDepth - minDepth > pieceThresh;
+            boardState(row,col) = bct + zeroCount > detectPiece;
         end
     end
     

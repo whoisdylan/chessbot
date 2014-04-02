@@ -4,7 +4,6 @@ function [ transferFunction ] = initBoard()
     figure(5) % figure 5 is the initialize image
     [color_image,dep] = getFrame();
     imshow(color_image);
-    gray_image = rgb2gray(color_image);
     %gray_image = color_image;
     title ('Click the corners of an EMPTY board');
     xlabel('Use order Top Left, Top Right, Bottom Right, Bottom Left');
@@ -53,12 +52,7 @@ function [ transferFunction ] = initBoard()
     
     cds = [xc;yc];
     
-    
-    
     transferFunction = cp2tform(cds',targs','projective');
-    mod_img = imtransform(gray_image,transferFunction,'XData',[1,imgWid+1],'YData',[1,imgWid+1]);
-    dep = imtransform(dep,transferFunction,'XData',[1,imgWid+1],'YData',[1,imgWid+1]);
-    figure(4),imshow(mod_img)
  
 
 end

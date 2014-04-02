@@ -2,30 +2,24 @@ function [ rgb,dep ] = getFrame( )
 %GETFRAME Summary of this function goes here
 %   Detailed explanation goes here
 
-[b,a] = kinectInteract(1);
+[unalteredColor,unalteredDepth] = kinectInteract(1);
 % for a demo overlay the images
-c = uint8(zeros(480,640,3));
-c(:,:,1) = (squeeze(b(3,:,:)))';
-c(:,:,2) = (squeeze(b(2,:,:)))';
-c(:,:,3) = (squeeze(b(1,:,:)))';
-rgb = c;
+rgb = uint8(zeros(480,640,3));
+rgb(:,:,1) = (squeeze(unalteredColor(3,:,:)))';
+rgb(:,:,2) = (squeeze(unalteredColor(2,:,:)))';
+rgb(:,:,3) = (squeeze(unalteredColor(1,:,:)))';
 
-minv = 10;
-gcs = [2 1 2 ; 1 0 1 ; 2 1 2];
-gcs = gcs / sum(gcs(:));
-a_filt = conv2(single(a),single(gcs),'same');
-a(a < minv) = a_filt(a < minv);
 
-dep = a';
+dep = unalteredDepth';% conv2(single(unalteredDepth'),single(gaus),'same');
 figure(2)
     imshow(rgb)
     hold on
-    colormap(gray);
+    colormap(cool);
     
     
     hold on, h=imagesc(dep);
     
-    set(h, 'AlphaData', 0.5*(dep > minv));
+    set(h, 'AlphaData', 0.5*(dep > 0));
     
     hold off
     

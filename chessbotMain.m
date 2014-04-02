@@ -9,6 +9,7 @@ board(3:6,:) = repmat({'empty'},4,8);
 
 % comment this out if you want compile time enabled.
 COMPILED_MEX_FILES = 1;
+KINECT_INITIALIZED = 1;
 
 if(exist('COMPILED_MEX_FILES') ~= 1)
     % only compile once or your matlab will crash...
@@ -23,6 +24,7 @@ end
 
 
 % init kinect
+
 if(exist('KINECT_INITIALIZED') ~= 1)
     kinectInteract(0)
     KINECT_INITIALIZED = 1;
@@ -36,7 +38,7 @@ end
 %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
 
 gameOver = false;
-transferFunction = initBoard();
+[transferFunction] = initBoard();
 %I don't know how to enum in matlab so states: wait=0, playerMoving=1,
 %playerDone=2
 currState = 0;
@@ -64,7 +66,7 @@ while (~gameOver)
             end
         %player done moving
         case 2
-            %changeList = scanBoardForChanges(prevBoard, nextBoard);
+            changeList = scanBoardForChanges(prevBoard, nextBoard);
             for i=1:2:size(changeList,1)/2
                 oldRow = changeList(i,1);
                 oldCol = changeList(i,2);
