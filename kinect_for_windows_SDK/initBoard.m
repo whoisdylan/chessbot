@@ -1,8 +1,9 @@
 function [ transferFunction ] = initBoard()
 %INITBOARD Take the current image from the kinect and use it
 % to produce the warped board via clicking corners
-    figure(5) % figure 5 is the initialize image
+    
     [color_image,dep] = getFrame();
+    figure(2)
     imshow(color_image);
     %gray_image = color_image;
     title ('Click the corners of an EMPTY board');

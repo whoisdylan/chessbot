@@ -5,10 +5,11 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
     colorImage = imtransform(colorImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     depthImage = imtransform(depthImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     %depthImage = averageBoard - double(depthImage);
-    figure(4)
+    figure(1)
+    subplot(2,2,3),
     imshow(colorImage)
     hold on
-    colormap(hot);
+    colormap(cool);
     
     
     
@@ -71,9 +72,10 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
             end
         end
     end
-    
-   
-    figure(3),imagesc(boardState);
+    hold off
+    figure(1)
+    subplot(2,2,4)
+    imagesc(boardState);
     pause(0.1)
 end
 
