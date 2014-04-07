@@ -65,7 +65,7 @@ while (~gameOver)
         case 2
             %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
             changeList = scanBoardForChanges(prevBoard, nextBoard);
-            for i=1:len(changeList)
+            for i=1:length(changeList)
                 oldRow = changeList(i,1);
                 oldCol = changeList(i,2);
                 newRow = changeList(i,3);
