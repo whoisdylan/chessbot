@@ -65,11 +65,11 @@ while (~gameOver)
         case 2
             %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
             changeList = scanBoardForChanges(prevBoard, nextBoard);
-            for i=1:2:size(changeList,1)/2
+            for i=1:len(changeList)
                 oldRow = changeList(i,1);
                 oldCol = changeList(i,2);
-                newRow = changeList(i+1,1);
-                newCol = changeList(i+1,2);
+                newRow = changeList(i,3);
+                newCol = changeList(i,4);
                 movedPiece = board(oldRow, oldCol);
                 %check if piece was captured
                 displacedPiece = board(newRow, newCol);
