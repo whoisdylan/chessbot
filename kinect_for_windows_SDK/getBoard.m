@@ -18,13 +18,15 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
     
     hold off
     
-    rgn = round(length(depthImage)/8);
+    rgn = round(length(depthImage)/8); %size of single square
+    rgnQuarter = round(rgn/4); %size of 1/4 of square
     pieceThresh = 30;
     detectPiece = 100;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
     handPresent = false;
+    colorWhiteThresh = 200;
     
     gaus = fspecial('gaussian');
     for row=1:8
@@ -51,8 +53,22 @@ function [ boardState, handPresent ] = getBoard( transferFunction)
                 disp 'hand found'
                 return;
             end
-            
-            boardState(row,col) = bct + zeroCount > detectPiece;
+            if (bct + zeroCount > detectPiece)
+                colorRegion = colorImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);
+                colorSubRegion = colorRegion(rgnQuarter:3*rgnQuarter,rgnQuarter:3*rgnQuarter);
+                avgSubRegion = mean(colorSubRegion,3);
+                avgColor = mean(avgSubRegion(:));
+                if (avgColor > colorWhiteThresh)
+                    %piece is white
+                    boardState(row,col) = 2;
+                else
+                    %piece is black
+                    boardState(row,col) = 1;
+                end
+            else
+                %no piece
+                boardState(row,col) = 0;
+            end
         end
     end
     

@@ -34,9 +34,6 @@ end
 
 %wait for some kind of input to signal white has moved, then scan board and
 %update board state
-
-%changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
-
 gameOver = false;
 [transferFunction] = initBoard();
 %I don't know how to enum in matlab so states: wait=0, playerMoving=1,
@@ -66,6 +63,7 @@ while (~gameOver)
             end
         %player done moving
         case 2
+            %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
             changeList = scanBoardForChanges(prevBoard, nextBoard);
             for i=1:2:size(changeList,1)/2
                 oldRow = changeList(i,1);
