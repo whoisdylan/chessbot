@@ -3,6 +3,7 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
 
     [colorImage,depthImage] = getFrame();
     colorImage = imtransform(colorImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
+    grayImage = rgb2gray(colorImage);
     depthImage = imtransform(depthImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     %depthImage = averageBoard - double(depthImage);
     figure(1)
@@ -20,16 +21,16 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     hold off
     
     rgn = round(length(depthImage)/8); %size of single square
-    rgnQuarter = round(rgn/4); %size of 1/4 of square
+    rgnQuarter = round(rgn/8); %size of 1/4 of square
     pieceThresh = 25;
     detectPiece = 15;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
     handPresent = false;
-    colorWhiteThresh = 200;
+    colorWhiteThresh = 150;
     
-    gaus = fspecial('gaussian',[1,1]);
+    gaus = fspecial('gaussian',[5,5]);
     % find the total area of the covered region on the board.
     totalCovered = 0;
     
@@ -63,11 +64,14 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
             
             totalCovered = totalCovered + bct + zeroCount;
             if (bct + zeroCount > detectPiece)
-                colorRegion = colorImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);
-                colorSubRegion = colorRegion(rgnQuarter:3*rgnQuarter,rgnQuarter:3*rgnQuarter);
-                avgSubRegion = mean(colorSubRegion,3);
-                avgColor = mean(avgSubRegion(:));
-                if (avgColor > colorWhiteThresh)
+                grayRegion = grayImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);
+                midPoint = round(length(grayRegion) / 2);
+                upperBound = round(midPoint + rgnQuarter);
+                lowerBound = round(midPoint - rgnQuarter);
+                graySubRegion = grayRegion(lowerBound:upperBound,lowerBound:upperBound);
+                avgSubRegion = mean(graySubRegion,3);
+                avgIntensity = mean(avgSubRegion(:));
+                if (avgIntensity > colorWhiteThresh)
                     %piece is white
                     boardState(row,col) = 2;
                 else

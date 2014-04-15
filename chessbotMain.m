@@ -8,8 +8,8 @@ board(8,:) = {'rook' 'knight' 'bishop' 'queen' 'king' 'bishop' 'knight' 'rook'};
 board(3:6,:) = repmat({'empty'},4,8);
 
 % comment this out if you want compile time enabled.
-COMPILED_MEX_FILES = 1;
-KINECT_INITIALIZED = 1;
+%COMPILED_MEX_FILES = 1;
+%KINECT_INITIALIZED = 1;
 
 if(exist('COMPILED_MEX_FILES') ~= 1)
     % only compile once or your matlab will crash...
@@ -79,22 +79,28 @@ while (~gameOver)
                 oldCol = changeList(i,2);
                 newRow = changeList(i,3);
                 newCol = changeList(i,4);
-                if(oldRow == 0 || oldCol == 0 || ...
-                   newRow == 0 || newCol == 0)
+                if( newRow == 0 || newCol == 0)
                     disp 'No changes found!'
                     nextState = 0;
                     continue;
                 end
-                movedPiece = board(oldRow, oldCol);
+                if(oldRow ~= 0 && oldCol ~= 0)
+                    movedPiece = board(oldRow, oldCol);
+                end
                 %check if piece was captured
                 displacedPiece = board(newRow, newCol);
                 board(newRow, newCol) = movedPiece;
-                board(oldRow, oldCol) = {'empty'};
+                
+                if(oldRow ~= 0 && oldCol ~= 0)
+                    board(oldRow, oldCol) = {'empty'};
+                end
                 %send movement commands to other chessbot
                 if (~strcmp(displacedPiece,'empty'))
                     removePieceFromBoard(newRow, newCol);
                 end
-                movePiece(oldRow, oldCol, newRow, newCol);
+                if(oldRow ~= 0 && oldCol ~= 0)
+                    movePiece(oldRow, oldCol, newRow, newCol);
+                end
                 %check for special cases
                 if (newRow == 8 && strcmp(movedPiece, 'pawn'))
                     %if pawn reaches the end, replace with queen
