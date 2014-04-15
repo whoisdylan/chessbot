@@ -14,9 +14,11 @@ KINECT_INITIALIZED = 1;
 if(exist('COMPILED_MEX_FILES') ~= 1)
     % only compile once or your matlab will crash...
     disp ' You need to change these paths to your Kinect SDK file ' 
+    cd kinect_for_windows_SDK
     mex '-IC:\Program Files\Microsoft SDKs\Kinect\v1.8\inc' ...
         '-LC:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\amd64' ...
-        '-lKinect10' -g kinect_for_windows_SDK\kinectInteract.cpp
+        '-lKinect10' -g kinectInteract.cpp
+    cd ..
     COMPILED_MEX_FILES = 1;
 else
     disp 'Compilation Phase Skipped!'
@@ -39,42 +41,55 @@ gameOver = false;
 %I don't know how to enum in matlab so states: wait=0, playerMoving=1,
 %playerDone=2
 currState = 0;
+[~, ~, totalCovered] = getBoard(transferFunction);
 handPresent = false;
+handThresh = 3000;
+
 while (~gameOver)
     nextState = currState;
     switch currState
         %waiting for player to move
         case 0
-            [currBoard, handPresent] = getBoard(transferFunction);
+            disp 'In state 0'
+            tCovers = totalCovered;
+            [currBoard, handPresent, totalCovered] = getBoard(transferFunction);
             %if hand is present, player is moving so don't update board
-            if (handPresent)
+            if (handPresent || totalCovered > tCovers + handThresh)
                 nextState = 1;
             else
                 prevBoard = currBoard;
             end
         %player is moving
         case 1
-            [currBoard, handPresent] = getBoard(transferFunction);
+            disp 'In state 1'
+            [currBoard, handPresent, totalCovered] = getBoard(transferFunction);
             %if there's no hand, then the player is done moving so grab the
             %board
-            if (~handPresent)
+            if (~handPresent && totalCovered < tCovers + handThresh)
                 nextState = 2;
                 nextBoard = currBoard;
             end
         %player done moving
         case 2
+            disp 'In state 2'
             %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
             changeList = scanBoardForChanges(prevBoard, nextBoard);
-            for i=1:length(changeList)
+            for i=1:size(changeList,1)
                 oldRow = changeList(i,1);
                 oldCol = changeList(i,2);
                 newRow = changeList(i,3);
                 newCol = changeList(i,4);
+                if(oldRow == 0 || oldCol == 0 || ...
+                   newRow == 0 || newCol == 0)
+                    disp 'No changes found!'
+                    nextState = 0;
+                    continue;
+                end
                 movedPiece = board(oldRow, oldCol);
                 %check if piece was captured
                 displacedPiece = board(newRow, newCol);
                 board(newRow, newCol) = movedPiece;
-                board(oldRow, oldCol) = 'empty';
+                board(oldRow, oldCol) = {'empty'};
                 %send movement commands to other chessbot
                 if (~strcmp(displacedPiece,'empty'))
                     removePieceFromBoard(newRow, newCol);
@@ -83,7 +98,7 @@ while (~gameOver)
                 %check for special cases
                 if (newRow == 8 && strcmp(movedPiece, 'pawn'))
                     %if pawn reaches the end, replace with queen
-                    board(newRow, newCol) = 'queen';
+                    board(newRow, newCol) = {'queen'};
                     replacePawnWithQueen(newRow, newCol);
                 end
             end

@@ -12,7 +12,9 @@ rgb(:,:,3) = (squeeze(unalteredColor(1,:,:)))';
 
 dep = unalteredDepth';% conv2(single(unalteredDepth'),single(gaus),'same');
     figure(1)
+    subplot(2,2,2),imagesc(unalteredDepth');
     subplot(2,2,1)
+    
     imshow(rgb)
     hold on
     colormap(cool);
