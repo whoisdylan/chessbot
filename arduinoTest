@@ -1,0 +1,65 @@
+void setup()
+{
+pinMode(pinArray[0], OUTPUT);      // sets the digital pin as output
+pinMode(pinArray[1], OUTPUT);      // sets the digital pin as output
+pinMode(pinArray[2], OUTPUT);      // sets the digital pin as output
+pinMode(pinArray[3], OUTPUT);      // sets the digital pin as output
+pinMode(pinI1,OUTPUT);
+pinMode(pinI2,OUTPUT);
+pinMode(speedpinA,OUTPUT);
+pinMode(pinI3,OUTPUT);
+pinMode(pinI4,OUTPUT);
+pinMode(speedpinB,OUTPUT);
+int pinArray[4];
+  pinArray[0] = 2;
+  pinArray[1] = 3;
+  pinArray[2] = 4;
+  pinArray[3] = 5;
+  int motor0 = pinArray[2];
+  int motor1 = pinArray[3];
+  int motor2 = pinArray[4];
+  int motor3 = pinArray[5];
+  int fwdspeed = 128;
+  int backspeed = -128;
+  long time_delay = 100; //100ms delay
+}
+  
+  
+  // start motor, run forward/backward for  a certain time, then stop motor
+  void setMode(int motor, int speed, long time_delay) {
+    
+    analogWrite(motor0, fwdspeed);
+    delay(time_delay);
+    analogWrite(motor0, backspeed);
+    delay(time_delay); 
+    stop();
+    
+    analogWrite(motor1, fwdspeed);
+    delay(time_delay);
+    analogWrite(motor1, backspeed);
+    delay(time_delay);
+    stop();
+    
+    analogWrite(motor2, fwdspeed);
+    delay(time_delay);
+    analogWrite(motor2, backspeed);
+    delay(time_delay); 
+    stop();
+    
+    analogWrite(motor3, fwdspeed);
+    delay(time_delay);
+    analogWrite(motor3, backspeed);
+    delay(time_delay);
+    stop();
+    
+    return;
+  }
+
+void stop()//
+{
+     digitalWrite(motor0,LOW);// Unenble the pin, to stop the motor. this should be done to avid damaging the motor.
+     digitalWrite(motor1,LOW);
+     digitalWrite(motor2,LOW);
+     digitalWrite(motor3,LOW);
+     delay(1000);
+}
