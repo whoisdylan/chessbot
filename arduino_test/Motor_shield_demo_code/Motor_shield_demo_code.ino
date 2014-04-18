@@ -32,6 +32,10 @@ void setup()
   pinMode(speedpinA,OUTPUT);
   pinMode(pinI3,OUTPUT);
   pinMode(pinI4,OUTPUT);
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
   pinMode(speedpinB,OUTPUT);
 }
  
@@ -81,17 +85,24 @@ void stop()//
 
 void loop()
 {
-  left();
-  delay(1000);
-  stop();
-  right();
-  delay(1000);
-  stop();
-// delay(2000);
-  forward();
-  delay(1000);
-  stop();
-  backward();
-  delay(1000); 
-  stop(); 
+  for (int i = 2; i <= 5; i++) {
+    left();
+    delay(1000);
+    stop();
+    right();
+    delay(1000);
+    stop();
+  // delay(2000);
+    forward();
+    delay(1000);
+    stop();
+    backward();
+    delay(1000); 
+    stop();
+    digitalWrite(2, LOW);
+    digitalWrite(3, LOW);
+    digitalWrite(4, LOW);
+    digitalWrite(5, LOW);    
+    digitalWrite(i, HIGH);
+  }
 }
