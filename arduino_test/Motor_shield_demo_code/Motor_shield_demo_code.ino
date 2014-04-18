@@ -23,7 +23,7 @@ int speedpinA=9;//enable motor A
 int pinI3=12;//define I3 interface 
 int pinI4=13;//define I4 interface 
 int speedpinB=10;//enable motor B
-int spead =127;//define the spead of motor
+int speed =127;//define the speed of motor
  
 void setup()
 {
@@ -41,8 +41,8 @@ void setup()
  
 void forward()
 {
-     analogWrite(speedpinA,spead);//input a simulation value to set the speed
-     analogWrite(speedpinB,spead);
+     analogWrite(speedpinA,speed);//input a simulation value to set the speed
+     analogWrite(speedpinB,speed);
      digitalWrite(pinI4,HIGH);//turn DC Motor B move clockwise
      digitalWrite(pinI3,LOW);
      digitalWrite(pinI2,LOW);//turn DC Motor A move anticlockwise
@@ -50,8 +50,8 @@ void forward()
 }
 void backward()//
 {
-     analogWrite(speedpinA,spead);//input a simulation value to set the speed
-     analogWrite(speedpinB,spead);
+     analogWrite(speedpinA,speed);//input a simulation value to set the speed
+     analogWrite(speedpinB,speed);
      digitalWrite(pinI4,LOW);//turn DC Motor B move anticlockwise
      digitalWrite(pinI3,HIGH);
      digitalWrite(pinI2,HIGH);//turn DC Motor A move clockwise
@@ -59,8 +59,8 @@ void backward()//
 }
 void left()//
 {
-     analogWrite(speedpinA,spead);//input a simulation value to set the speed
-     analogWrite(speedpinB,spead);
+     analogWrite(speedpinA,speed);//input a simulation value to set the speed
+     analogWrite(speedpinB,speed);
      digitalWrite(pinI4,HIGH);//turn DC Motor B move clockwise
      digitalWrite(pinI3,LOW);
      digitalWrite(pinI2,HIGH);//turn DC Motor A move clockwise
@@ -68,8 +68,8 @@ void left()//
 }
 void right()//
 {
-     analogWrite(speedpinA,spead);//input a simulation value to set the speed
-     analogWrite(speedpinB,spead);
+     analogWrite(speedpinA,speed);//input a simulation value to set the speed
+     analogWrite(speedpinB,speed);
      digitalWrite(pinI4,LOW);//turn DC Motor B move anticlockwise
      digitalWrite(pinI3,HIGH);
      digitalWrite(pinI2,LOW);//turn DC Motor A move clockwise
