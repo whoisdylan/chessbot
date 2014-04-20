@@ -76,11 +76,27 @@
   }
 
   // Commands are 4 bytes,
+  //                 uint8 int8              uint8  uint8 (uint16)
   // They consist of Motor,Spd/Direction,and TimeL, TimeH
   char command[4];
   char comCount = 0;
-  int motorNum = 0;
+  int motorNum = -1;
+  int direct;
+  long time = 0;
+  
   void loop() {
-          
+    if(Serial.available()) {
+      command[comCount++]  = Serial.read();
+      if(comCount == 4) {
+        comCount = 0;
+        if(command[1] != 0) {
+          fwdspeed = (int)command[1]&0x7F;
+          setMotor((int)command[0],(command[1] & 0x80) ? REVERSE : FORWARD,
+                   // TimeH << 8 | TimeL
+                   (long)((((unsigned long)command[3]) << 8) | (unsigned long)command[2]));                 
+          Serial.write(1);
+        }          
+      }
+    }
   }
 
