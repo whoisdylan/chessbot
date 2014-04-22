@@ -22,7 +22,7 @@
   
   int motorArray[4] = {2,3,4,5};  
   int sensorArray[4] = {A0,A1,A2,A3};
-  int stopDirection[4] = {FORWARD,FORWARD,FORWARD,FORWARD};
+  int stopDirection[4] = {FORWARD,REVERSE,FORWARD,REVERSE};
 
   void stop()//
   {
@@ -133,14 +133,17 @@
           Serial.println(" --- Command Executed! --- ");
         } else {
           // Motor Movement
-          if(command[1] != 0) {
-            motorSpeed = (int)command[1]&0x7F;
+          char motorINTER = (char)command[1];
+          motorINTER = motorINTER;
+          if(motorINTER != 0) {
             long timeDelay = (long)((((unsigned long)command[3]) << 8) | (unsigned long)command[2]);
-            
+            motorSpeed = (motorINTER < 0 ? -motorINTER : motorINTER) << 1;
             Serial.print("M: ");
             Serial.print((int)command[0]);
             Serial.print(" D: ");
-            Serial.print((command[1] & 0x80) ? REVERSE : FORWARD);
+            Serial.print((motorINTER < 0) ? REVERSE : FORWARD);
+            Serial.print(" S: ");
+            Serial.print(motorSpeed);
             Serial.print(" Time: ");
             Serial.print((int)timeDelay);
             Serial.println(" Command Recieved!");
