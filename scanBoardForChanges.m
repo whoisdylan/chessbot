@@ -5,15 +5,17 @@ changeList=zeros(1,4);
 
 boardDiff = prevBoard ~= currBoard;
 % changes = boardDiff;
+% find the old piece location vs the new piece location
 pieceMoves = currBoard(boardDiff) == 0;
 
+% find rows and cols of changes
 [ci,cj] = ind2sub([8,8],find(boardDiff));
 changes = [ci,cj];
 piece0 = 1;
 piece1 = 1;
 for i=1:length(pieceMoves)
     %find which position is the old position and which is the new
-    %by finding where there's no piece on the currBoardx
+    %by finding where there's no piece on the currBoard
     if pieceMoves(i)
         changeList(piece0,1:2) = changes(i,:);
         piece0 = piece0 + 1;

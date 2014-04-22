@@ -79,28 +79,23 @@ while (~gameOver)
                 oldCol = changeList(i,2);
                 newRow = changeList(i,3);
                 newCol = changeList(i,4);
-                if( newRow == 0 || newCol == 0)
-                    disp 'No changes found!'
-                    nextState = 0;
+                if( newRow == 0 || newCol == 0 || oldRow == 0 || oldCol == 0)
+                    disp 'No valid changes found!'
+%                     nextState = 0;
                     continue;
                 end
-                if(oldRow ~= 0 && oldCol ~= 0)
-                    movedPiece = board(oldRow, oldCol);
-                end
+                movedPiece = board(oldRow, oldCol);
+
                 %check if piece was captured
                 displacedPiece = board(newRow, newCol);
                 board(newRow, newCol) = movedPiece;
+                board(oldRow, oldCol) = {'empty'};
                 
-                if(oldRow ~= 0 && oldCol ~= 0)
-                    board(oldRow, oldCol) = {'empty'};
-                end
                 %send movement commands to other chessbot
                 if (~strcmp(displacedPiece,'empty'))
                     removePieceFromBoard(newRow, newCol);
                 end
-                if(oldRow ~= 0 && oldCol ~= 0)
-                    movePiece(oldRow, oldCol, newRow, newCol);
-                end
+                movePiece(oldRow, oldCol, newRow, newCol);
                 %check for special cases
                 if (newRow == 8 && strcmp(movedPiece, 'pawn'))
                     %if pawn reaches the end, replace with queen
