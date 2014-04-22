@@ -4,6 +4,10 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     [colorImage,depthImage] = getFrame();
     colorImage = imtransform(colorImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     grayImage = rgb2gray(colorImage);
+    grayImage = double(grayImage);
+    grayImage = grayImage - min(grayImage(:));
+    grayImage = grayImage/max(grayImage(:)) * 255;
+    grayImage = uint8(round(grayImage));
     depthImage = imtransform(depthImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     %depthImage = averageBoard - double(depthImage);
     figure(1)
@@ -22,13 +26,13 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     
     rgn = round(length(depthImage)/8); %size of single square
     rgnQuarter = round(rgn/8); %size of 1/4 of square
-    pieceThresh = 25;
+    pieceThresh = 20;
     detectPiece = 15;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
     handPresent = false;
-    colorWhiteThresh = 150;
+    colorBlackThresh = 100;
     
     gaus = fspecial('gaussian',[5,5]);
     % find the total area of the covered region on the board.
@@ -56,12 +60,13 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
             bct = double(sum(maxDepth - region(:) > pieceThresh));
             
             %return if hand is on board, player is moving
+            %{
             if ((maxDepth - boardMin) > handThresh)
                 handPresent = true;
                 disp 'hand found'
                 return;
             end
-            
+            %}
             totalCovered = totalCovered + bct + zeroCount;
             if (bct + zeroCount > detectPiece)
                 grayRegion = grayImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);
@@ -69,14 +74,14 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
                 upperBound = round(midPoint + rgnQuarter);
                 lowerBound = round(midPoint - rgnQuarter);
                 graySubRegion = grayRegion(lowerBound:upperBound,lowerBound:upperBound);
-                avgSubRegion = mean(graySubRegion,3);
-                avgIntensity = mean(avgSubRegion(:));
-                if (avgIntensity > colorWhiteThresh)
-                    %piece is white
-                    boardState(row,col) = 2;
-                else
+%                 avgSubRegion = mean(graySubRegion,3);
+                avgIntensity = mean(graySubRegion(:));
+                if (avgIntensity <= colorBlackThresh)
                     %piece is black
                     boardState(row,col) = 1;
+                else
+                    %piece is white
+                    boardState(row,col) = 2;
                 end
             else
                 %no piece
