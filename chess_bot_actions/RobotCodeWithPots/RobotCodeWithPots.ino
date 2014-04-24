@@ -28,6 +28,35 @@
   int upperBound[4] = {1000,1000,1000,1000};
   int lowerBound[4] = {100,100,100,100};
 
+  #define avVal 10
+  int averageValues[4][avVal];
+  void initArray() {
+    for(int x =0; x < 4; x ++) {
+      for(int y = 0; y < avVal; y++) {
+        averageValues[x][y] = analogRead(sensorArray[x]);
+        delay(1);
+      }
+    }
+  }
+
+  
+  void captureValues(){
+    for(int x = 0; x < 4; x++) {
+       for(int y = avVal; y > 0; y++) {
+          averageValues[x][y] = averageValues[x][y-1];
+       }
+       averageValues[x][0] = analogRead(sensorArray[x]);
+    } 
+  }
+  
+  int getValue(int index) {
+    int ret = 0;
+    for( int y = 0; y < avVal; y++) {
+       ret += averageValues[index][y];
+    }
+    return ret;
+  }
+
 
   void stop()//
   {
@@ -40,12 +69,15 @@
 
   }
 
+ // To account for the noise margin
   #define CLOSE_ENOUGH 5
   #define SPEED_LOW 140
   #define SPEED_HIGH 255
   void executeCommand(long time_delay,int motorNumber, int DIRECTION, int targetPosition) {
     long startTime = millis();
-    int sensorValue = analogRead(sensorArray[motorNumber]);
+    captureValues();
+    int sensorValue = getValue(motorNumber);
+
     // if less than target and increasing, continue
     // if its greater than and decreasing, continue
     // if the time hasn't been hit yet, continue
@@ -61,7 +93,7 @@
       motorSpeed = error > (SPEED_HIGH - SPEED_LOW) ? SPEED_HIGH : SPEED_LOW + error;
       analogWrite(speedpinA, motorSpeed);
       
-      sensorValue = analogRead(sensorArray[motorNumber]);
+      sensorValue = getValue(motorNumber);
       // If the value is greater than the upperBound and the direction is increasing, stop
       if(sensorValue > upperBound[motorNumber] && DIRECTION == increasingDirection[motorNumber]){
         stop();
@@ -85,7 +117,7 @@
       
       // If target is greater than the current value, then move in the increasing direction
       // Otherwise move in the opposite direction
-      int DIRECTION = analogRead(sensorArray[motor]) < targetPosition ?
+      int DIRECTION = getValue(motor) < targetPosition ?
                                  increasingDirection[motor] : 1 - increasingDirection[motor];
       
       analogWrite(speedpinA, SPEED_LOW);
@@ -132,7 +164,7 @@
     pinMode(pinI3,OUTPUT);
     pinMode(pinI4,OUTPUT);
     pinMode(speedpinB,OUTPUT);
-    
+    initArray();
     Serial.begin(9600);
   }
 
@@ -145,6 +177,8 @@
   long time = 0;
   
   void loop() {
+    captureValues();
+    delay(1);
     if(Serial.available() > 0) {
       command[comCount++]  = Serial.read();
       if(comCount == 3) {
