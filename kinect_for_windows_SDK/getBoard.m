@@ -4,6 +4,10 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     [colorImage,depthImage] = getFrame();
     colorImage = imtransform(colorImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     grayImage = rgb2gray(colorImage);
+    grayImage = double(grayImage);
+    grayImage = grayImage - min(grayImage(:));
+    grayImage = grayImage/max(grayImage(:)) * 255;
+    grayImage = uint8(round(grayImage));
     depthImage = imtransform(depthImage,transferFunction,'nearest','XData',[1,481],'YData',[1,481]);
     %depthImage = averageBoard - double(depthImage);
     figure(1)
@@ -22,13 +26,13 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     
     rgn = round(length(depthImage)/8); %size of single square
     rgnQuarter = round(rgn/8); %size of 1/4 of square
-    pieceThresh = 25;
+    pieceThresh = 20;
     detectPiece = 15;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
     handPresent = false;
-    colorWhiteThresh = 150;
+    colorBlackThresh = 100;
     
     midPoint = round(rgn/2);
     upperBound = round(midPoint + rgnQuarter);
@@ -66,7 +70,7 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
                 disp 'hand found'
                 return;
             end
-                        
+            
             %create depth mask to only look at color data for locations of
             %chess piece
             depthMask = region;
@@ -89,13 +93,13 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
                 %compute avgIntensity using only color values with valid
                 %chess piece depths
                 avgIntensity = sum(grayRegion(:))/nnz(grayRegion);
-                
-                if (avgIntensity > colorWhiteThresh)
-                    %piece is white
-                    boardState(row,col) = 2;
-                else
+
+                if (avgIntensity <= colorBlackThresh)
                     %piece is black
                     boardState(row,col) = 1;
+                else
+                    %piece is white
+                    boardState(row,col) = 2;
                 end
             else
                 %no piece
