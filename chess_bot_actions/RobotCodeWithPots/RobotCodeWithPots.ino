@@ -108,7 +108,7 @@
   }
     
   #define TIMEOUT 5000
-  void setMotor(int motor, int targetPosition) {
+  void setMotor(int motor, int targetPosition, long timeout) {
       stop();
       for(int x = 0 ; x < 4; x++) {
         digitalWrite(motorArray[x],(x == motor ? HIGH : LOW));
@@ -117,13 +117,14 @@
       
       // If target is greater than the current value, then move in the increasing direction
       // Otherwise move in the opposite direction
+      timeout = timeout == 0 ? TIMEOUT : timeout;
       int DIRECTION = getValue(motor) < targetPosition ?
                                  increasingDirection[motor] : 1 - increasingDirection[motor];
       
       analogWrite(speedpinA, SPEED_LOW);
       digitalWrite(pinI1,DIRECTION);
       digitalWrite(pinI2,HIGH - DIRECTION);
-      executeCommand(TIMEOUT,motor,DIRECTION,targetPosition);
+      executeCommand(timeout,motor,DIRECTION,targetPosition);
       stop();
       
   }
@@ -171,7 +172,7 @@
   // Commands are 3 bytes,
   //                 uint8  uint8  uint8 (uint16)
   // They consist of Motor, TargetL, TargetH
-  unsigned char command[3];
+  unsigned char command[5];
   char comCount = 0;
   int motorNum = -1;
   long time = 0;
@@ -181,7 +182,7 @@
     delay(1);
     if(Serial.available() > 0) {
       command[comCount++]  = Serial.read();
-      if(comCount == 3) {
+      if(comCount == 5) {
         comCount = 0;
         if(command[0] == 10) {
           // Claw action
@@ -201,14 +202,20 @@
           motorINTER = motorINTER;
           if(motorINTER != 0) {
             int targetDir = (int)((((unsigned long)command[2]) << 8) | (unsigned long)command[1]);
-            Serial.print("M: ");
+            long timeout = (int)((((unsigned long)command[4]) << 8) | (unsigned long)command[3]);
+            Serial.print("Motor: ");
             Serial.print((int)command[0]);
-            Serial.print(" T: ");
+            Serial.print(" Target: ");
             Serial.print(targetDir);
-            Serial.println(" Command Recieved!");
+            Serial.print(" Timeout: ");
+            Serial.print(timeout);
+            Serial.print(" Current: ");
+            Serial.println(getValue((int)command[0]));
             
-            setMotor((int)command[0],targetDir);
-            Serial.println(" --- Command Executed! --- ");
+            // For safety a timeout is added.
+            setMotor((int)command[0],targetDir,timeout);
+            Serial.print("Final: ");
+            Serial.println(getValue((int)command[0]));
           }          
         }
       }
