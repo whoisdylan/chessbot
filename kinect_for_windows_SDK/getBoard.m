@@ -81,7 +81,7 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
             
             totalCovered = totalCovered + bct + zeroCount;
             if (bct + zeroCount > detectPiece)
-                grayRegion = grayImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);\\
+                grayRegion = grayImage(((row-1)*rgn+1):row*rgn,((col-1)*rgn+1):col*rgn);
                 
                 %subregion method
 %                 graySubRegion = grayRegion(lowerBound:upperBound,lowerBound:upperBound);
