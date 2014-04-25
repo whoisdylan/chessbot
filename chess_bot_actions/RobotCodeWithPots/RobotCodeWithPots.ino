@@ -25,8 +25,8 @@
   int stopDirection[4] = {REVERSE,REVERSE,FORWARD,REVERSE};
 
   int increasingDirection[4] = {REVERSE,FORWARD,FORWARD,REVERSE};
-  int upperBound[4] = {760,628,556,542};
-  int lowerBound[4] = {220,500,485,487};
+  int upperBound[4] = {685,530,556,542};
+  int lowerBound[4] = {340,490,485,487};
 
   #define avVal 8
   int averageValues[4][avVal];
@@ -70,7 +70,7 @@
   }
 
  // To account for the noise margin
-  #define CLOSE_ENOUGH 2
+  #define CLOSE_ENOUGH 1
   #define SPEED_LOW 140
   #define SPEED_HIGH 255
   void executeCommand(long time_delay,int motorNumber, int DIRECTION, int targetPosition) {
