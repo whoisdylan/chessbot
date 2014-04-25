@@ -22,19 +22,18 @@
   
   int motorArray[4] = {2,3,4,5};  
   int sensorArray[4] = {A0,A1,A2,A3};
-  int stopDirection[4] = {FORWARD,REVERSE,FORWARD,REVERSE};
+  int stopDirection[4] = {REVERSE,REVERSE,FORWARD,REVERSE};
 
-  int increasingDirection[4] = {FORWARD,REVERSE,FORWARD,REVERSE};
-  int upperBound[4] = {1000,1000,1000,1000};
-  int lowerBound[4] = {100,100,100,100};
+  int increasingDirection[4] = {REVERSE,FORWARD,FORWARD,REVERSE};
+  int upperBound[4] = {760,628,556,542};
+  int lowerBound[4] = {220,500,485,487};
 
-  #define avVal 10
+  #define avVal 8
   int averageValues[4][avVal];
   void initArray() {
     for(int x =0; x < 4; x ++) {
       for(int y = 0; y < avVal; y++) {
-        averageValues[x][y] = analogRead(sensorArray[x]);
-        delay(1);
+        averageValues[x][y] =0;
       }
     }
   }
@@ -42,7 +41,7 @@
   
   void captureValues(){
     for(int x = 0; x < 4; x++) {
-       for(int y = avVal; y > 0; y++) {
+       for(int y = avVal; y > 0; y--) {
           averageValues[x][y] = averageValues[x][y-1];
        }
        averageValues[x][0] = analogRead(sensorArray[x]);
@@ -51,10 +50,11 @@
   
   int getValue(int index) {
     int ret = 0;
+    captureValues();
     for( int y = 0; y < avVal; y++) {
        ret += averageValues[index][y];
     }
-    return ret;
+    return ret / avVal;
   }
 
 
@@ -70,7 +70,7 @@
   }
 
  // To account for the noise margin
-  #define CLOSE_ENOUGH 5
+  #define CLOSE_ENOUGH 2
   #define SPEED_LOW 140
   #define SPEED_HIGH 255
   void executeCommand(long time_delay,int motorNumber, int DIRECTION, int targetPosition) {
@@ -165,8 +165,9 @@
     pinMode(pinI3,OUTPUT);
     pinMode(pinI4,OUTPUT);
     pinMode(speedpinB,OUTPUT);
-    initArray();
+
     Serial.begin(9600);
+    initArray();
   }
 
   // Commands are 3 bytes,
@@ -179,9 +180,10 @@
   
   void loop() {
     captureValues();
-    delay(1);
+//    delay(1);
     if(Serial.available() > 0) {
       command[comCount++]  = Serial.read();
+      
       if(comCount == 5) {
         comCount = 0;
         if(command[0] == 10) {
@@ -198,25 +200,22 @@
           Serial.println(" --- Command Executed! --- ");
         } else {
           // Motor Movement
-          char motorINTER = (char)command[1];
-          motorINTER = motorINTER;
-          if(motorINTER != 0) {
-            int targetDir = (int)((((unsigned long)command[2]) << 8) | (unsigned long)command[1]);
-            long timeout = (int)((((unsigned long)command[4]) << 8) | (unsigned long)command[3]);
-            Serial.print("Motor: ");
-            Serial.print((int)command[0]);
-            Serial.print(" Target: ");
-            Serial.print(targetDir);
-            Serial.print(" Timeout: ");
-            Serial.print(timeout);
-            Serial.print(" Current: ");
-            Serial.println(getValue((int)command[0]));
-            
-            // For safety a timeout is added.
-            setMotor((int)command[0],targetDir,timeout);
-            Serial.print("Final: ");
-            Serial.println(getValue((int)command[0]));
-          }          
+          int targetDir = (int)((((unsigned long)command[2]) << 8) | (unsigned long)command[1]);
+          long timeout = (int)((((unsigned long)command[4]) << 8) | (unsigned long)command[3]);
+          Serial.print("Motor: ");
+          Serial.print((int)command[0]);
+          Serial.print(" Target: ");
+          Serial.print(targetDir);
+          Serial.print(" Timeout: ");
+          Serial.print(timeout);
+          Serial.print(" Current: ");
+          Serial.println(getValue((int)command[0]));
+          
+          // For safety a timeout is added.
+          setMotor((int)command[0],targetDir,timeout);
+          Serial.print("Final: ");
+          Serial.println(getValue((int)command[0]));
+                    
         }
       }
     }

@@ -33,7 +33,7 @@ targHighBits = uint8(targHighBits);
 instrhwinfo('serial')
 
 % should be changed depending on computer; COM3/4 is for windows
-port = 'COM7';
+port = 'COM6';
 
 ifs = instrfind;
 if(~isempty(ifs))
@@ -41,7 +41,7 @@ if(~isempty(ifs))
 end
 
 global obj;
-obj = serial(port, 'BaudRate', 9600, 'Parity', 'none', 'DataBits', 8, 'StopBits', 1,'Timeout',(timeMS + 1000)/1000);
+obj = serial(port, 'BaudRate', 9600, 'Parity', 'none', 'DataBits', 8, 'StopBits', 1,'Timeout',(timeMS + 3000)/1000);
 
 % displays info of the port
 get(obj,{'Type','Name','Port'})
