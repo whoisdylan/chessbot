@@ -27,7 +27,7 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     rgn = round(length(depthImage)/8); %size of single square
     rgnQuarter = round(rgn/8); %size of 1/4 of square
     pieceThresh = 20;
-    detectPiece = 15;
+    detectPiece = 17;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
@@ -38,7 +38,7 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     upperBound = round(midPoint + rgnQuarter);
     lowerBound = round(midPoint - rgnQuarter);
     
-    gaus = fspecial('gaussian',[5,5]);
+    gaus = fspecial('gaussian',[9,9]);
     % find the total area of the covered region on the board.
     totalCovered = 0;
     
@@ -97,13 +97,13 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
                 avgIntensity = sum(maskedColorRegion(:))/nnz(depthMask);
                 if (row < 3)
                     if (avgIntensity > colorBlackThresh)
-                        display('avgIntensity black fail with ')
-                        avgIntensity
+                        %display('avgIntensity black fail with ')
+                       % avgIntensity
                     end
                 elseif (row > 6)
                     if (avgIntensity <= colorBlackThresh)
-                        display('avgIntensity white fail with ')
-                        avgIntensity
+                        %display('avgIntensity white fail with ')
+                       % avgIntensity
                     end
                 end
                 if (avgIntensity <= colorBlackThresh)

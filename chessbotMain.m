@@ -3,8 +3,8 @@
 board = cell(8,8);
 board(2,:) = repmat({'pawn'},1,8);
 board(7,:) = repmat({'pawn'},1,8);
-board(1,:) = {'rook' 'knight' 'bishop' 'queen' 'king' 'bishop' 'knight' 'rook'};
-board(8,:) = {'rook' 'knight' 'bishop' 'queen' 'king' 'bishop' 'knight' 'rook'};
+board(1,:) = {'rook' 'knight' 'bishop' 'king' 'queen' 'bishop' 'knight' 'rook'};
+board(8,:) = {'rook' 'knight' 'bishop' 'king' 'queen' 'bishop' 'knight' 'rook'};
 board(3:6,:) = repmat({'empty'},4,8);
 
 % comment this out if you want compile time enabled.
@@ -43,8 +43,9 @@ gameOver = false;
 currState = 0;
 [~, ~, totalCovered] = getBoard(transferFunction);
 handPresent = false;
-handThresh = 3000;
-
+handThresh = 3400;
+averageCount = 0;
+aveBoard = zeros(8,8,5);
 while (~gameOver)
     nextState = currState;
     switch currState
@@ -52,12 +53,13 @@ while (~gameOver)
         case 0
             disp 'In state 0'
             tCovers = totalCovered;
-            [currBoard, handPresent, totalCovered] = getBoard(transferFunction);
+            aveBoard(:,:,1:4) = aveBoard(:,:,2:5);
+            [aveBoard(:,:,5), handPresent, totalCovered] = getBoard(transferFunction);
             %if hand is present, player is moving so don't update board
             if (handPresent || totalCovered > tCovers + handThresh)
                 nextState = 1;
             else
-                prevBoard = currBoard;
+                prevBoard = mode(aveBoard,3);
             end
         %player is moving
         case 1
@@ -72,9 +74,23 @@ while (~gameOver)
         %player done moving
         case 2
             disp 'In state 2'
+            averageCount = averageCount + 1;
+            [currBoard, handPresent, totalCovered] = getBoard(transferFunction);
+            aveBoard(:,:,averageCount) = currBoard;
+            if(averageCount == 5)
+                nextState = 3;
+            else
+                nextState = 2;
+            end
+        case 3
+            averageCount = 0;
+            disp 'In state 3'
+            nextBoard = mode(aveBoard,3);
             %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
             changeList = scanBoardForChanges(prevBoard, nextBoard);
+            size(changeList)
             for i=1:size(changeList,1)
+               
                 oldRow = changeList(i,1);
                 oldCol = changeList(i,2);
                 newRow = changeList(i,3);
@@ -102,8 +118,17 @@ while (~gameOver)
                     board(newRow, newCol) = {'queen'};
                     replacePawnWithQueen(newRow, newCol);
                 end
+                break;
+            end
+            for i = 1:length(board)
+                a = '';
+                for j = 1:length(board)
+                    a = sprintf('%s %s',a,board{i,j});
+                end
+                disp(a);
             end
             nextState = 0;
+            
     end
     currState = nextState;
 end
