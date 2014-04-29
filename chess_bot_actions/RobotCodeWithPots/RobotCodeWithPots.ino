@@ -170,9 +170,9 @@
     initArray();
   }
 
-  // Commands are 3 bytes,
-  //                 uint8  uint8  uint8 (uint16)
-  // They consist of Motor, TargetL, TargetH
+  // Commands are 5 bytes,
+  //                 uint8  uint8    uint8    uint8     uint8
+  // They consist of Motor, TargetL, TargetH, TimeoutL, TimeoutH
   unsigned char command[5];
   char comCount = 0;
   int motorNum = -1;

@@ -12,15 +12,10 @@ end
 motorNumber = 10;
 speed = ACTION;
 
-timeLowBits = 0;
-timeHighBits = 0;
-
 % send back a signal when it is finished
 
 motorNumber = uint8(motorNumber);
 speed = int8(speed);
-timeLowBits = uint8(timeLowBits);
-timeHighBits = uint8(timeHighBits);
 
 % Displays the available serial ports on computer 
 instrhwinfo('serial')
@@ -41,11 +36,12 @@ get(obj,{'Type','Name','Port'})
 
 fopen(obj);
 pause(2);
-
+% Writes the CLAW command and then ACTION then zeros
 fwrite(obj, motorNumber,'uint8');
 fwrite(obj, speed,'int8');
-fwrite(obj, timeLowBits,'uint8');
-fwrite(obj, timeHighBits,'uint8');
+fwrite(obj, 0,'uint8');
+fwrite(obj, 0,'uint8');
+fwrite(obj, 0,'uint8');
 disp 'Sent Command!'
 str = fgets(obj);
 disp(str);
