@@ -7,14 +7,16 @@ board(1,:) = {'rook' 'knight' 'bishop' 'king' 'queen' 'bishop' 'knight' 'rook'};
 board(8,:) = {'rook' 'knight' 'bishop' 'king' 'queen' 'bishop' 'knight' 'rook'};
 board(3:6,:) = repmat({'empty'},4,8);
 
-% comment this out if you want compile time enabled.
-%COMPILED_MEX_FILES = 1;
-%KINECT_INITIALIZED = 1;
+% Add my files to the path pls!
+addpath ('KinectCode','ChessBotActions','ChessBotActions/RobotPrimitives');
 
+% This will compile the code exactly once per run, you will have to restart
+% matlab in order for this to not crash matlab if run twice, please don't
+% run this twice :(
 if(exist('COMPILED_MEX_FILES') ~= 1)
     % only compile once or your matlab will crash...
     disp ' You need to change these paths to your Kinect SDK file ' 
-    cd kinect_for_windows_SDK
+    cd KinectCode
     mex '-IC:\Program Files\Microsoft SDKs\Kinect\v1.8\inc' ...
         '-LC:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\amd64' ...
         '-lKinect10' -g kinectInteract.cpp
@@ -26,7 +28,9 @@ end
 
 
 % init kinect
-
+% This will start the kinect, It will not crash Matlab, but if you call it
+% too many times it will eat your memory and make the computer start
+% running slowly, very slowly.
 if(exist('KINECT_INITIALIZED') ~= 1)
     kinectInteract(0)
     KINECT_INITIALIZED = 1;
