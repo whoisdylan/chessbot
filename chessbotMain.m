@@ -43,52 +43,60 @@ gameOver = false;
 currState = 0;
 [~, ~, totalCovered] = getBoard(transferFunction);
 handPresent = false;
-handThresh = 3400;
+% 3400
+handThresh = 5000;
 averageCount = 0;
-aveBoard = zeros(8,8,5);
+avMax = 10;
+aveBoard = zeros(8,8,avMax);
+disp 'Initializing board state'
+for i = 1:avMax
+    aveBoard(:,:,1:avMax - 1) = aveBoard(:,:,2:avMax);
+    [aveBoard(:,:,avMax), handPresent, totalCovered] = getBoard(transferFunction); 
+    
+end
+disp 'Ready for next move'
 while (~gameOver)
     nextState = currState;
     switch currState
         %waiting for player to move
         case 0
-            disp 'In state 0'
+            
             tCovers = totalCovered;
-            aveBoard(:,:,1:4) = aveBoard(:,:,2:5);
-            [aveBoard(:,:,5), handPresent, totalCovered] = getBoard(transferFunction);
+            aveBoard(:,:,1:avMax - 1) = aveBoard(:,:,2:avMax);
+            [aveBoard(:,:,avMax), handPresent, totalCovered] = getBoard(transferFunction);
             %if hand is present, player is moving so don't update board
             if (handPresent || totalCovered > tCovers + handThresh)
                 nextState = 1;
+                disp 'Hand in Frame'
             else
                 prevBoard = mode(aveBoard,3);
             end
         %player is moving
         case 1
-            disp 'In state 1'
             [currBoard, handPresent, totalCovered] = getBoard(transferFunction);
             %if there's no hand, then the player is done moving so grab the
             %board
             if (~handPresent && totalCovered < tCovers + handThresh)
                 nextState = 2;
                 nextBoard = currBoard;
+                disp 'Scanning board for changes'
             end
         %player done moving
         case 2
-            disp 'In state 2'
             averageCount = averageCount + 1;
             [currBoard, handPresent, totalCovered] = getBoard(transferFunction);
             aveBoard(:,:,averageCount) = currBoard;
-            if(averageCount == 5)
+            if(averageCount == avMax)
                 nextState = 3;
+                disp 'Executing Changes'
             else
                 nextState = 2;
             end
         case 3
             averageCount = 0;
-            disp 'In state 3'
             nextBoard = mode(aveBoard,3);
             %changeList should be cell array of the form {row col; newRow newCol} {pieceWasHere; nowHere}
             changeList = scanBoardForChanges(prevBoard, nextBoard);
-            size(changeList)
             for i=1:size(changeList,1)
                
                 oldRow = changeList(i,1);
@@ -113,13 +121,16 @@ while (~gameOver)
                 end
                 movePiece(oldRow, oldCol, newRow, newCol);
                 %check for special cases
-                if (newRow == 8 && strcmp(movedPiece, 'pawn'))
+                if (newRow == 8 && strcmp(movedPiece, 'pawn') ||...
+                    newRow == 1 && strcmp(movedPiece, 'pawn'))
                     %if pawn reaches the end, replace with queen
                     board(newRow, newCol) = {'queen'};
                     replacePawnWithQueen(newRow, newCol);
                 end
                 break;
             end
+            %{
+            % Uncomment for board state
             for i = 1:length(board)
                 a = '';
                 for j = 1:length(board)
@@ -127,8 +138,9 @@ while (~gameOver)
                 end
                 disp(a);
             end
+            %}
             nextState = 0;
-            
+            disp 'Ready for next move'
     end
     currState = nextState;
 end

@@ -26,19 +26,22 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     
     rgn = round(length(depthImage)/8); %size of single square
     rgnQuarter = round(rgn/8); %size of 1/4 of square
-    pieceThresh = 20;
-    detectPiece = 17;
+    pieceThresh = 27;
+    % 17
+    detectPiece = 37;
     handThresh = 1500;
     boardState = zeros(8);
     boardMin = min(depthImage(:));
     handPresent = false;
+    % 100
     colorBlackThresh = 100;
     
     midPoint = round(rgn/2);
     upperBound = round(midPoint + rgnQuarter);
     lowerBound = round(midPoint - rgnQuarter);
     
-    gaus = fspecial('gaussian',[9,9]);
+    gaussian_size = 5;
+    gaus = fspecial('gaussian',[gaussian_size,gaussian_size]);
     % find the total area of the covered region on the board.
     totalCovered = 0;
     
@@ -53,23 +56,16 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
             region(region == 0) = [];
             
             if(length(region(:)) < length(original(:))*.25 ) 
-                disp 'all NaNs in region '
-                [row,col]
+                %disp 'all NaNs in region '
+                %[row,col]
                 boardState(row,col) = -1;
                 handPresent = true;
-                disp 'hand found'
+                %disp 'hand found'
                 return;
             end
             
             maxDepth = double(max(region(:)));
             bct = double(sum(maxDepth - region(:) >= pieceThresh));
-
-            %return if hand is on board, player is moving
-            if ((maxDepth - boardMin) > handThresh)
-                handPresent = true;
-                disp 'hand found'
-                return;
-            end
             
             %create depth mask to only look at color data for locations of
             %chess piece
@@ -85,27 +81,11 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
                 %normalize it
                 grayRegion = (grayRegion-min(grayRegion(:)))*(255/(max(grayRegion(:))-min(grayRegion(:))));
                 
-                %subregion method
-%                 graySubRegion = grayRegion(lowerBound:upperBound,lowerBound:upperBound);
-%                 avgSubRegion = mean(graySubRegion,3);
-%                 avgIntensity = mean(avgSubRegion(:));
-
                 %depthMask method
                 maskedColorRegion = double(grayRegion).*depthMask;
                 %compute avgIntensity using only color values with valid
                 %chess piece depths
                 avgIntensity = sum(maskedColorRegion(:))/nnz(depthMask);
-                if (row < 3)
-                    if (avgIntensity > colorBlackThresh)
-                        %display('avgIntensity black fail with ')
-                       % avgIntensity
-                    end
-                elseif (row > 6)
-                    if (avgIntensity <= colorBlackThresh)
-                        %display('avgIntensity white fail with ')
-                       % avgIntensity
-                    end
-                end
                 if (avgIntensity <= colorBlackThresh)
                     %piece is black
                     boardState(row,col) = 1;
@@ -122,7 +102,7 @@ function [ boardState, handPresent, totalCovered ] = getBoard( transferFunction)
     hold off
     figure(1)
     subplot(2,2,4)
-    cla
+    %cla
     imagesc(boardState);
     pause(0.1)
 end
