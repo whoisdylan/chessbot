@@ -21,7 +21,7 @@ speed = int8(speed);
 instrhwinfo('serial')
 
 % should be changed depending on computer; COM3/4 is for windows
-port = 'COM6';
+port = 'COM7';
 
 ifs = instrfind;
 if(~isempty(ifs))

@@ -7,11 +7,11 @@
  #define GRAB 1
  #define RELEASE -1
  #define STOP 0
- #define HOLD 20
+ #define HOLD 0
  #define CLOSE 127
  #define OPEN -127
- #define ACTION_TIME 200
- 
+ #define ACTION_TIME 800
+ #define CLOSE_ADDITION 250 
   int pinI1=8;//define I1 interface
   int pinI2=11;//define I2 interface 
   int speedpinA=9;//enable motor A
@@ -25,10 +25,12 @@
   int stopDirection[4] = {REVERSE,REVERSE,FORWARD,REVERSE};
 
   int increasingDirection[4] = {REVERSE,FORWARD,FORWARD,REVERSE};
-  int upperBound[4] = {685,530,556,542};
-  int lowerBound[4] = {340,490,485,487};
+  //int upperBound[4] = {740,765,745,723};
+  //int lowerBound[4] = {285,725,680,683};
+  int upperBound[4] = {742,850,1000,1000};
+  int lowerBound[4] = {0,0,0,0};
 
-  #define avVal 8
+  #define avVal 7
   int averageValues[4][avVal];
   void initArray() {
     for(int x =0; x < 4; x ++) {
@@ -39,22 +41,24 @@
   }
 
   
-  void captureValues(){
-    for(int x = 0; x < 4; x++) {
+  void captureValues( int index){
        for(int y = avVal; y > 0; y--) {
-          averageValues[x][y] = averageValues[x][y-1];
+          averageValues[index][y] = averageValues[index][y-1];
        }
-       averageValues[x][0] = analogRead(sensorArray[x]);
-    } 
+       delay(19);
+       analogRead(A5);
+       delay(1);
+       averageValues[index][0] = analogRead(sensorArray[index]);
+    
   }
   
   int getValue(int index) {
-    int ret = 0;
-    captureValues();
+    long ret = 0;
+    captureValues(index);
     for( int y = 0; y < avVal; y++) {
        ret += averageValues[index][y];
     }
-    return ret / avVal;
+    return (int) (ret / avVal);
   }
 
 
@@ -70,28 +74,66 @@
   }
 
  // To account for the noise margin
-  #define CLOSE_ENOUGH 1
-  #define SPEED_LOW 140
-  #define SPEED_HIGH 255
+  #define CLOSE_ENOUGH 0
+  #define SPEED_LOW 50
+  #define SPEED_HIGH 175
+  #define INTEGRAL_SIZE 10
+  
+  #define P 1.2
+  #define I 1.0
+  #define D 7.0
   void executeCommand(long time_delay,int motorNumber, int DIRECTION, int targetPosition) {
     long startTime = millis();
-    captureValues();
+    captureValues(motorNumber);
     int sensorValue = getValue(motorNumber);
-
+    int integral[INTEGRAL_SIZE] ;
+    int last_error;
     // if less than target and increasing, continue
     // if its greater than and decreasing, continue
     // if the time hasn't been hit yet, continue
-    while(millis() - startTime < time_delay && 
-         ((targetPosition > sensorValue + CLOSE_ENOUGH && DIRECTION == increasingDirection[motorNumber]) ||
-           (targetPosition < sensorValue - CLOSE_ENOUGH && DIRECTION != increasingDirection[motorNumber]))) {
+
+    int error = targetPosition - sensorValue;
+            // take ABS of error
+    for( int x = 0; x<INTEGRAL_SIZE; x ++)
+      integral[x] = 0;
+    error = error < 0 ? -error : error;
+    last_error = error;
+    while(millis() - startTime < time_delay && (error > CLOSE_ENOUGH || last_error >CLOSE_ENOUGH)) {
+         //((targetPosition > sensorValue + CLOSE_ENOUGH && DIRECTION == increasingDirection[motorNumber]) ||
+         //  (targetPosition < sensorValue - CLOSE_ENOUGH && DIRECTION != increasingDirection[motorNumber]))) {
      
       // Here is the P__ control loop.
-      int error = targetPosition - sensorValue;
-      // take ABS of error
+      int DIRECTION = getValue(motorNumber) < targetPosition ?
+                      increasingDirection[motorNumber] : 1 - increasingDirection[motorNumber];
+
+
+      int derivative;
+      error = targetPosition - sensorValue;
+            // take ABS of error
+      int integralSum = 0;
+      for (int x = INTEGRAL_SIZE-1; x > 0 ; x --) {
+        integral[x] = integral[x-1];
+        integralSum = integralSum + integral[x];
+      }
+     
+      integralSum = integralSum + error;
+      integralSum = integralSum > 0 ? integralSum : -integralSum;
+      integral[0] = error;
+
       error = error < 0 ? -error : error;
+      derivative = error - last_error;
+
       // Slow down and stop if you approach the target value.
-      motorSpeed = error > (SPEED_HIGH - SPEED_LOW) ? SPEED_HIGH : SPEED_LOW + error;
+      motorSpeed = error*P;
+      motorSpeed += integralSum*I;
+      motorSpeed += derivative*D;
+      if(motorSpeed > SPEED_HIGH)
+        motorSpeed = SPEED_HIGH;
       analogWrite(speedpinA, motorSpeed);
+
+      digitalWrite(pinI1,DIRECTION);
+      digitalWrite(pinI2,HIGH - DIRECTION);
+
       
       sensorValue = getValue(motorNumber);
       // If the value is greater than the upperBound and the direction is increasing, stop
@@ -103,17 +145,23 @@
         stop();
         break;
       }
-      
+      last_error = error;
     }
   }
     
   #define TIMEOUT 5000
   void setMotor(int motor, int targetPosition, long timeout) {
       stop();
+      getValue(motor);
+      delay(100);
+      for(int x = 0; x < avVal; x ++) {
+        getValue(motor);
+      }
       for(int x = 0 ; x < 4; x++) {
         digitalWrite(motorArray[x],(x == motor ? HIGH : LOW));
       }
       delay(10);
+      
       
       // If target is greater than the current value, then move in the increasing direction
       // Otherwise move in the opposite direction
@@ -138,7 +186,7 @@
         analogWrite(speedpinB, CLOSE);
         digitalWrite(pinI3,HIGH);
         digitalWrite(pinI4,LOW);
-        delay(ACTION_TIME);
+        delay(ACTION_TIME + CLOSE_ADDITION);
         analogWrite(speedpinB,HOLD);
         
       } else if(GRABPOSITION == RELEASE && clawPosition != RELEASE) {
@@ -179,7 +227,7 @@
   long time = 0;
   
   void loop() {
-    captureValues();
+//    captureValues();
 //    delay(1);
     if(Serial.available() > 0) {
       command[comCount++]  = Serial.read();

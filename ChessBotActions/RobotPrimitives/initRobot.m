@@ -1,0 +1,4 @@
+function initRobot( )
+    positionArray
+end
+

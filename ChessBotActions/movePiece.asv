@@ -3,7 +3,7 @@ function movePiece(oldRow, oldCol, newRow, newCol)
     disp(str)
     tCol = newRow;
     tRow = newCol;
-    moveToPosition(tRow,tCol);
+    moveToPosition(t
     
 end
 

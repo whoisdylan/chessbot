@@ -9,7 +9,7 @@ board(3:6,:) = repmat({'empty'},4,8);
 
 % Add my files to the path pls!
 addpath ('KinectCode','ChessBotActions','ChessBotActions/RobotPrimitives');
-
+positionArray
 % This will compile the code exactly once per run, you will have to restart
 % matlab in order for this to not crash matlab if run twice, please don't
 % run this twice :(
